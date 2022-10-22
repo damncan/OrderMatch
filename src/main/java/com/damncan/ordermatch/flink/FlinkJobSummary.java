@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.io.Serializable;
+import java.time.Duration;
 import java.util.Properties;
 
 /**
@@ -53,10 +54,10 @@ public class FlinkJobSummary implements Serializable {
         properties.setProperty("group.id", "1");
 
         FlinkKafkaConsumer<ObjectNode> consumer = new FlinkKafkaConsumer<>(cookedDataTopic, new MatchResultSchema(), properties);
-        consumer.setStartFromEarliest();
+        // consumer.setStartFromEarliest();
 
-        consumer.assignTimestampsAndWatermarks(WatermarkStrategy.forMonotonousTimestamps());
-        // consumer.assignTimestampsAndWatermarks(WatermarkStrategy.forBoundedOutOfOrderness(Duration.ofSeconds(5)));
+        consumer.assignTimestampsAndWatermarks(WatermarkStrategy.<ObjectNode>forMonotonousTimestamps().withIdleness(Duration.ofSeconds(5)));
+        // consumer.assignTimestampsAndWatermarks(WatermarkStrategy.<ObjectNode>forBoundedOutOfOrderness(Duration.ofSeconds(3)).withIdleness(Duration.ofSeconds(5)));
 
         DataStream<ObjectNode> sourceStream = env.addSource(consumer);
 
